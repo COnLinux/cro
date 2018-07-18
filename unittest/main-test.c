@@ -27,9 +27,9 @@ static void Scheduler(void* data) {
       assert(t->status == PENDING);
     }
 
-    printf("%d\n",GetTaskSize());
+    printf("%lld\n",(long long int)(GetTaskSize()));
 
-    if(GetTaskSize() > 100) {
+    if(GetTaskSize() > 30) {
       do {
         Task* nt = ScheduleTask();
         if(!nt) break;

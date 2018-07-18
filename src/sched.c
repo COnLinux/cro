@@ -60,7 +60,7 @@ int RunTask( Task* t ) {
 
 void YieldTask() {
   kCurrent->status = PENDING;
-  YieldContext(kCurrent->ctx,kScheduler);
+  SwapContext(kCurrent->ctx,kScheduler);
 }
 
 void DeleteTask( Task* t ) {

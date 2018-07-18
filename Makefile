@@ -23,7 +23,7 @@ RELEASE_FLAGS = -I$(PWD) -g3 -O3
 RELEASE_LIBS  =
 
 
-TEST_FLAGS        =-O0 -g3 -I./
+TEST_FLAGS        =-O3 -g3 -I./
 TEST_LIBS         =
 
 # -------------------------------------------------------------------------------

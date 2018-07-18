@@ -31,7 +31,6 @@ typedef void (*ContextFunction)( void* );
 Context* CreateContext( ContextFunction , void* );
 void FreeContext ( Context* );
 
-void YieldContext( Context* , Context* );
 void SwapContext ( Context* , Context* );
 void RunInit     ( Context* , Context* );
 

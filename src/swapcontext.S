@@ -3,7 +3,6 @@ SECTION .text
 
 global SwapContext
 global RunInit
-global YieldContext
 
 extern GetScheduler
 
@@ -56,19 +55,10 @@ extern GetScheduler
 	jmp qword[%1+64]
 %endmacro
 
-YieldContext:
-	; rdi --> from
-	; rsi --> to
-	save_context    rdi
-	restore_context rsi
-	resume rsi
-
 SwapContext:
   ; save the context
 	save_context    rdi
 	restore_context rsi
-
-	; do the call
 	resume rsi
 
 RunInit:
