@@ -19,11 +19,11 @@ LDFLAGS           =
 # Flags for different types of build
 #
 # -------------------------------------------------------------------------------
-RELEASE_FLAGS = -I$(PWD) -g3 -O3
+RELEASE_FLAGS = -I$(PWD) -O3
 RELEASE_LIBS  =
 
 
-TEST_FLAGS        =-O3 -g3 -I./
+TEST_FLAGS        =-O0 -g3 -I./
 TEST_LIBS         =
 
 # -------------------------------------------------------------------------------
@@ -59,7 +59,7 @@ release: CCFLAGS  += $(RELEASE_FLAGS)
 release: LDFLAGS  += $(RELEASE_LIBS)
 
 release: $(OBJECT) $(ASMOBJECT)
-	ar rcs libcr.a $(OBJECT) $(ASMOBJECT)
+	ar rcs libsched.a $(OBJECT) $(ASMOBJECT)
 
 all : release
 
@@ -67,4 +67,4 @@ clean:
 	rm -rf $(OBJECT)
 	rm -rf $(ASMOBJECT)
 	rm -rf $(TESTOBJECT)
-	rm -rf libcr.a
+	rm -rf libsched.a

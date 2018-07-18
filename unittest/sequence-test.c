@@ -4,33 +4,44 @@
 
 #include "../src/sched.h"
 
-static void Slave(void* data) {
-  (void)data;
+Sched* kSched;
+
+static void Slave( Sched* sched , void* data) {
+  YieldData d;
+  d.ptr = NULL;
+
+  assert(data == NULL);
+  assert(kSched == sched);
+
   printf("Slave1\n");
-  YieldTask();
+  SchedYield(sched,&d);
   printf("Slave2\n");
-  YieldTask();
+  SchedYield(sched,&d);
   printf("SlaveDone\n");
 }
 
-static void SchedulerSequence(void* data) {
-  (void)data;
+static int SchedulerSequence( Sched* sched , void* data) {
+  assert(data  == NULL);
+  assert(sched == kSched);
 
-  Task* t = NewTask(Slave,NULL);
-  RunTask(t);
-  assert(t->status == PENDING);
+  Task* t = SchedNewTask(sched,Slave,NULL,10240);
+
+  SchedRunTask(sched,t);
+  assert(t->status == SCHED_PENDING);
   printf("Scheduler1\n");
-  RunTask(t);
-  assert(t->status == PENDING);
-  printf("Scheduler2\n");
-  RunTask(t);
-  assert(t->status == DEAD);
-  printf("SchedulerDone\n");
-  DeleteTask(t);
-}
 
-int main() {
-  InitTask(SchedulerSequence,NULL);
+  SchedRunTask(sched,t);
+  assert(t->status == SCHED_PENDING);
+  printf("Scheduler2\n");
+  SchedRunTask(sched,t);
+  assert(t->status == SCHED_DEAD);
+  printf("SchedulerDone\n");
+  SchedDeleteTask(sched,t);
   return 0;
 }
 
+int main() {
+  kSched = SchedCreate(SchedulerSequence,NULL);
+  assert( SchedStart(kSched,1) == 0 );
+  return 0;
+}

@@ -1,17 +1,8 @@
 SECTION .data
 SECTION .text
 
-global SwapContext
-global RunInit
-
-extern GetScheduler
-
-;; The only trick here is how to easily maintain the ABI requirement of RSP register
-;; which means you have to put it align with 16 bytes to satisfy sick SSE requirement
-;; on X64 machine.
-;; What I did is *do not mess up* stack here. Yes, I found it easier to write code by
-;; not touching stack at all. All the context is based on either global varaibles or
-;; other stuff. I personally feel it really simple and easy to write.
+global _CoRoutineSwap
+global _CoRoutineInit
 
 %macro save_context 1
 	; rdi -> input  context
@@ -46,38 +37,38 @@ extern GetScheduler
 	mov rsp, qword[%1+56]
 %endmacro
 
-;; the shit is we jump back to the callee saved return address however
-;; the stack has that return address as well so we will have a double
-;; return which is absolutely wrong. Here when we do resume, I manually
-;; adjust the stack register rsp by one qword to omit the return address
-%macro resume 1
-  ;; use ret is better for branch prediction because of call/ret branch
-	;; predictaion is impelemented mostly by pairing call and ret instruction
+%macro resume 0
 	ret
-	; add rsp,8
-	; jmp qword[%1+64]
 %endmacro
 
-SwapContext:
+_CoRoutineSwap:
   ; save the context
 	save_context    rdi
 	restore_context rsi
-	resume rsi
+	resume
 
-RunInit:
+;; when we call this function it means we are the very first time on the
+;; calling functions so our RSP must be aligned properly
+_CoRoutineInit:
   ; save the context
 	save_context    rdi
 	restore_context rsi
+
+  ; NOTES: here the stack is carefully matained to be aligned with 16 bytes
+	sub rsp, 16
+	mov qword[rsp], rdi
 
 	; do the call
-	mov rdi, qword [rsi+72]
-	call qword [rsi+64]
+	mov rax, rsi
+	mov rdi, qword [rax+72]
+	mov rsi, qword [rax+80]
+	call qword[rax+64]
 
 	; when we return here it means we are able to
 	; finish the function call normally without a
 	; context switching involved.
-	call GetScheduler
+	mov rax, qword[rsp]
 	restore_context rax
 
 	; return from the functions
-	resume rax
+	resume

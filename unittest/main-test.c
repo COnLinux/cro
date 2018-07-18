@@ -1,52 +1,66 @@
 #include <stdio.h>
 #include <assert.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include "../src/sched.h"
 
-
-static void Another(void* data) {
-  (void)data;
+static void Another(Sched* sched , void* data) {
+  YieldData dd;
   int a = 10;
   int b = 20;
   int c = 30;
   int d = 40;
   double e = 5.5;
   double f = 7.6 + e;
-  YieldTask();
+  dd.ptr = NULL;
+  (void)data;
+
   printf("Here:%d,%d,%d,%d,%f,%f\n",a,b,c,d,e,f);
-  YieldTask();
+  SchedYield(sched,&dd);
   printf("Here:%d,%d,%d,%d,%f,%f\n",a,b,c,d,e,f);
-  YieldTask();
+  SchedYield(sched,&dd);
   printf("Here:%d,%d,%d,%d,%f,%f\n",a,b,c,d,e,f);
-  YieldTask();
+  SchedYield(sched,&dd);
+  printf("Here:%d,%d,%d,%d,%f,%f\n",a,b,c,d,e,f);
+  SchedYield(sched,&dd);
   printf("Here:%d,%d,%d,%d,%f,%f\n",a,b,c,d,e,f);
 }
 
-static void Scheduler(void* data) {
+static int Resume(Sched* sched) {
+  uint32_t sz = sched->size;
+  uint32_t target = rand() % 1771;
+  return sz > target;
+}
+
+static int Scheduler(Sched* sched,void* data) {
   (void)data;
+
   while(1) {
 
-    for( int i = 1 ; i < 10 ; ++i ) {
-      Task* t = NewTask(Another,NULL);
-      RunTask(t);
-      assert(t->status == PENDING);
+    for( int i = 1 ; i < 100 ; ++i ) {
+      Task* t = SchedNewTask(sched,Another,NULL,1024*10);
+      SchedRunTask(sched,t);
+      assert(t->status == SCHED_PENDING);
     }
+    fprintf(stderr,"%d\n",sched->size);
 
-    printf("%lld\n",(long long int)(GetTaskSize()));
-
-    if(GetTaskSize() > 30) {
-      do {
-        Task* nt = ScheduleTask();
-        if(!nt) break;
-        RunTask(nt);
-        if(nt->status == DEAD) DeleteTask(nt);
-      } while(1);
+    if(Resume(sched)) {
+      for( Task* t = SchedTail(*sched)->next ; t != SchedTail(*sched); ) {
+        Task* n = t->next;
+        SchedRunTask(sched,t);
+        if(t->status == SCHED_DEAD)
+          SchedDeleteTask(sched,t);
+        t = n;
+      }
     }
   }
+  return 0;
 }
 
 int main() {
-  InitTask(Scheduler,NULL);
+  Sched* sched = SchedCreate(Scheduler,NULL);
+  srand(0);
+  assert(SchedStart(sched,1) == 0);
   return 0;
 }
