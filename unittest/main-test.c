@@ -15,6 +15,12 @@ static void Another(void* data) {
   double f = 7.6 + e;
   YieldTask();
   printf("Here:%d,%d,%d,%d,%f,%f\n",a,b,c,d,e,f);
+  YieldTask();
+  printf("Here:%d,%d,%d,%d,%f,%f\n",a,b,c,d,e,f);
+  YieldTask();
+  printf("Here:%d,%d,%d,%d,%f,%f\n",a,b,c,d,e,f);
+  YieldTask();
+  printf("Here:%d,%d,%d,%d,%f,%f\n",a,b,c,d,e,f);
 }
 
 static void Scheduler(void* data) {
@@ -34,12 +40,9 @@ static void Scheduler(void* data) {
         Task* nt = ScheduleTask();
         if(!nt) break;
         RunTask(nt);
-        assert(nt->status == DEAD);
-        DeleteTask(nt);
+        if(nt->status == DEAD) DeleteTask(nt);
       } while(1);
     }
-
-    sleep(1);
   }
 }
 

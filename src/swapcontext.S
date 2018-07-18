@@ -51,8 +51,11 @@ extern GetScheduler
 ;; return which is absolutely wrong. Here when we do resume, I manually
 ;; adjust the stack register rsp by one qword to omit the return address
 %macro resume 1
-	add rsp,8
-	jmp qword[%1+64]
+  ;; use ret is better for branch prediction because of call/ret branch
+	;; predictaion is impelemented mostly by pairing call and ret instruction
+	ret
+	; add rsp,8
+	; jmp qword[%1+64]
 %endmacro
 
 SwapContext:

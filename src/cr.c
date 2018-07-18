@@ -11,9 +11,9 @@ static const uint32_t kSizeOfStack = 10240;
 Context* CreateContext( ContextFunction main , void* data ) {
   Context* ctx   = malloc(sizeof(Context) + kSizeOfStack);
   // RSP is growing in reverse direction
-  (*ctx)[RSP]       = (uint64_t)((char*)(ctx) + sizeof(Context) + kSizeOfStack);
-  (*ctx)[RIP]       = (uint64_t)(main);
-  (*ctx)[DATA]      = (uint64_t)(data);
+  (*ctx)[RSP]    = (uint64_t)((char*)(ctx) + sizeof(Context) + kSizeOfStack);
+  (*ctx)[RIP]    = (uint64_t)(main);
+  (*ctx)[DATA]   = (uint64_t)(data);
   return ctx;
 }
 
